@@ -25,6 +25,7 @@ const authRoutes: FastifyPluginCallbackTypebox = (fastify, opts, done) => {
         httpOnly: true,
         secure: true,
         path: "/api/auth/refresh",
+        sameSite: true,
       })
       .send(rest);
   });
@@ -60,6 +61,7 @@ const authRoutes: FastifyPluginCallbackTypebox = (fastify, opts, done) => {
           httpOnly: true,
           secure: true,
           path: "/api/auth/refresh",
+          sameSite: true,
         })
         .send({ accessToken });
     }
