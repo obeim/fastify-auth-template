@@ -1,23 +1,23 @@
 import { UserRole } from "@prisma/client";
 import { FastifyPluginCallback } from "fastify";
+import UsersController from "../controllers/users.controller";
 
 const usersRoutes: FastifyPluginCallback = (fastify, opts, done) => {
   // Protected routes
+  const usersController = new UsersController(fastify);
+
+  fastify.get("/publicRoute", usersController.public);
 
   fastify.get(
     "/authRoute",
     { preHandler: [fastify.authenticate] },
-    (request, reply) => {
-      reply.send({ user: request.user });
-    }
+    usersController.authOnly
   );
 
   fastify.get(
     "/adminRoute",
     { preHandler: [fastify.authenticate, fastify.authorize([UserRole.ADMIN])] },
-    (request, reply) => {
-      reply.send({ user: request.user });
-    }
+    usersController.adminOnly
   );
 
   fastify.get(
@@ -28,9 +28,7 @@ const usersRoutes: FastifyPluginCallback = (fastify, opts, done) => {
         fastify.authorize([UserRole.MODERATOR]),
       ],
     },
-    (request, reply) => {
-      reply.send({ user: request.user });
-    }
+    usersController.moderatorOnly
   );
 
   fastify.get(
@@ -41,9 +39,7 @@ const usersRoutes: FastifyPluginCallback = (fastify, opts, done) => {
         fastify.authorize([UserRole.MODERATOR, UserRole.ADMIN]),
       ],
     },
-    (request, reply) => {
-      reply.send({ user: request.user });
-    }
+    usersController.adminAndModertor
   );
 
   done();

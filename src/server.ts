@@ -41,8 +41,8 @@ try {
   server.register(prismaPlugin);
 
   server.register(authPlugin);
-  server.register(authRoutes, { prefix: "/api/auth" });
-  server.register(usersRoutes);
+  server.register(authRoutes, { prefix: "/api/v1/auth" });
+  server.register(usersRoutes, { prefix: "/api/v1" });
 
   // all routes will inside users route will require admin permission
   // server.register((instance, opts, done) => {
