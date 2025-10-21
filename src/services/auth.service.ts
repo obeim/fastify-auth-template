@@ -70,7 +70,7 @@ export class AuthService {
       });
 
       if (!user || user.refreshToken !== refreshToken) {
-        this.fastify.log.info(
+        this.fastify.log.warn(
           `User:${user?.id}_${user?.email}:Invalid Refresh Token:${refreshToken}`
         );
         const error = new Error("Invalid refresh token") as FastifyError;
@@ -98,7 +98,7 @@ export class AuthService {
         refreshToken: newRefreshToken,
       };
     } catch (err) {
-      this.fastify.log.info(`Invalid Refresh Token:${refreshToken}`);
+      this.fastify.log.warn(`Invalid Refresh Token:${refreshToken}`);
       const error = new Error(
         "Invalid or expired refresh token"
       ) as FastifyError;

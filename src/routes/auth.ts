@@ -1,5 +1,5 @@
 import { FastifyPluginCallbackTypebox } from "@fastify/type-provider-typebox";
-import { AuthService } from "../services/auth";
+import { AuthService } from "../services/auth.service";
 import {
   LoginSchema,
   refreshTokenSchema,

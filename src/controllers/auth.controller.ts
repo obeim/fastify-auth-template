@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import AuthService from "../services/auth";
+import AuthService from "../services/auth.service";
 import {
   LoginSchema,
   refreshTokenSchema,
