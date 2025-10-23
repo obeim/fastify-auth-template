@@ -14,7 +14,7 @@ import {
 
 declare module "@fastify/jwt" {
   interface FastifyJWT {
-    payload: { id: number; name: string; role: string }; // payload type
+    payload: requestUser; // payload type
     user: requestUser; // request.user type
   }
 }

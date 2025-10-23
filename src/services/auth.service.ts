@@ -1,6 +1,7 @@
 import { FastifyError, FastifyInstance } from "fastify";
 import bcrypt from "bcrypt";
 import { User } from "@prisma/client";
+import { requestUser } from "../types/auth";
 
 export class AuthService {
   private fastify: FastifyInstance;
@@ -59,11 +60,7 @@ export class AuthService {
 
   async refreshUserToken(refreshToken: string) {
     try {
-      const payload = this.jwt.verify(refreshToken) as {
-        id: number;
-        username: string;
-        role: string;
-      };
+      const payload = this.jwt.verify(refreshToken) as requestUser;
 
       const user = await this.prisma.user.findUnique({
         where: { id: payload.id },

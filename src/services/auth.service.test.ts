@@ -1,4 +1,4 @@
-import { describe, vi, beforeEach, it } from "vitest";
+import { describe, vi, beforeEach, it, expect } from "vitest";
 import AuthService from "./auth.service";
 import bcrypt from "bcrypt";
 
@@ -23,20 +23,34 @@ const fastifyMock = {
 describe("authService", () => {
   let authService: AuthService;
 
+  const mockedUser = {
+    id: 1,
+    email: "test@gmail.com",
+    name: "test",
+    password: "hashedPassword",
+    role: "User",
+    refreshToken: "refreshToken",
+  };
+  const mockPayload = {
+    id: 1,
+    name: "test",
+    role: "User",
+  };
+
   beforeEach(() => {
     vi.resetAllMocks();
     authService = new AuthService(fastifyMock as any);
   });
 
   describe("loginUser", () => {
-    it("throw an error if user not found", async ({ expect }) => {
+    it("throw an error if user not found", async () => {
       prismaMock.user.findUnique.mockReturnValue(null);
       await expect(
         authService.loginUser("test", "123456")
       ).rejects.toThrowError("Invalid credentials");
     });
 
-    it("throw an error when password is incorrect", async ({ expect }) => {
+    it("throw an error when password is incorrect", async () => {
       prismaMock.user.findUnique.mockReturnValue({ password: "hashed" });
       vi.spyOn(bcrypt, "compare").mockReturnValue(false as any);
       await expect(
@@ -44,23 +58,39 @@ describe("authService", () => {
       ).rejects.toThrowError("Invalid credentials");
     });
 
+    it("generate new refresh token if the current one is not valid", async ({
+      expect,
+    }) => {
+      prismaMock.user.findUnique.mockReturnValue(mockedUser);
+      vi.spyOn(bcrypt, "compare").mockReturnValue(true as any);
+      jwtMock.sign.mockReturnValueOnce("accessToken");
+      jwtMock.sign.mockReturnValueOnce("refreshToken");
+
+      jwtMock.verify.mockImplementation(() => {
+        throw new Error("Mocked network error");
+      });
+
+      await expect(
+        authService.loginUser(mockedUser.email, mockedUser.password)
+      ).resolves.toStrictEqual({
+        user: mockedUser,
+        accessToken: "accessToken",
+        refreshToken: "refreshToken",
+      });
+
+      expect(jwtMock.verify).toHaveBeenCalledOnce();
+
+      expect(jwtMock.sign).toHaveBeenCalledTimes(2);
+
+      expect(prismaMock.user.update).toHaveBeenCalledWith({
+        where: { id: mockedUser.id },
+        data: { refreshToken: "refreshToken" },
+      });
+    });
+
     it("return access and refresh token when successful", async ({
       expect,
     }) => {
-      const mockedUser = {
-        id: 1,
-        email: "test@gmail.com",
-        name: "test",
-        password: "hashedPassword",
-        role: "User",
-        refreshToken: "refreshToken",
-      };
-      const mockPayload = {
-        id: 1,
-        username: "test",
-        role: "User",
-      };
-
       prismaMock.user.findUnique.mockReturnValue(mockedUser);
       vi.spyOn(bcrypt, "compare").mockReturnValue(true as any);
       jwtMock.sign.mockReturnValue("accessToken");
@@ -77,6 +107,54 @@ describe("authService", () => {
       expect(prismaMock.user.update).toHaveBeenCalledWith({
         where: { id: mockedUser.id },
         data: { refreshToken: "refreshToken" },
+      });
+    });
+  });
+
+  describe("registerUser", () => {
+    it("it throw an error when user already exist", async () => {
+      prismaMock.user.findUnique.mockReturnValue(mockedUser);
+      await expect(authService.registerUser(mockedUser)).rejects.toThrowError(
+        "User Already exist"
+      );
+    });
+
+    it("to create successfully if user doesn't exist", async () => {
+      prismaMock.user.findUnique.mockReturnValue(null);
+      prismaMock.user.create.mockReturnValue(mockedUser);
+      await expect(authService.registerUser(mockedUser)).resolves.toEqual(
+        mockedUser
+      );
+    });
+
+    it("throw an error if no user was returned after creation", async ({
+      expect,
+    }) => {
+      prismaMock.user.findUnique.mockReturnValue(null);
+      prismaMock.user.create.mockReturnValue(null);
+      await expect(authService.registerUser(mockedUser)).rejects.toThrowError(
+        "Something Went Wrong"
+      );
+    });
+  });
+
+  describe("logoutUser", () => {
+    it("throw an error if user doesn't exist", async () => {
+      prismaMock.user.findUnique.mockReturnValue(null);
+      await expect(authService.logoutUser(mockedUser.id)).rejects.toThrowError(
+        "User not found"
+      );
+    });
+
+    it("update user refresh token and logout successfully", async () => {
+      prismaMock.user.findUnique.mockReturnValue(mockedUser);
+
+      await expect(authService.logoutUser(mockedUser.id)).resolves.toEqual({
+        message: "Logged out successfully",
+      });
+      expect(prismaMock.user.update).toBeCalledWith({
+        where: { id: mockedUser.id },
+        data: { refreshToken: null },
       });
     });
   });
