@@ -70,9 +70,7 @@ export class AuthService {
         this.fastify.log.warn(
           `User:${user?.id}_${user?.email}:Invalid Refresh Token:${refreshToken}`
         );
-        const error = new Error("Invalid refresh token") as FastifyError;
-        error.statusCode = 401;
-        throw error;
+        throw new Error();
       }
 
       const accessToken = this.jwt.sign(

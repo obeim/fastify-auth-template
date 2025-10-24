@@ -158,4 +158,53 @@ describe("authService", () => {
       });
     });
   });
+
+  describe("refreshUserToken", () => {
+    it("throw an error if refresh token is not valid", async () => {
+      jwtMock.verify.mockImplementation(() => {
+        throw new Error();
+      });
+
+      await expect(
+        authService.refreshUserToken(mockedUser.refreshToken)
+      ).rejects.toThrowError("Invalid or expired refresh token");
+
+      expect(fastifyMock.log.warn).toHaveBeenCalledWith(
+        `Invalid Refresh Token:${mockedUser.refreshToken}`
+      );
+    });
+
+    it("throw an error if refresh token doesn't match current user refresh token", async () => {
+      jwtMock.verify.mockReturnValue(mockPayload);
+      prismaMock.user.findUnique.mockReturnValue(mockedUser);
+
+      await expect(
+        authService.refreshUserToken("wrongRefreshToken")
+      ).rejects.toThrowError("Invalid or expired refresh token");
+
+      expect(fastifyMock.log.warn).toHaveBeenCalledWith(
+        `User:${mockedUser?.id}_${mockedUser?.email}:Invalid Refresh Token:wrongRefreshToken`
+      );
+    });
+
+    it("return new access and refresh token when successful", async () => {
+      jwtMock.verify.mockReturnValue(mockPayload);
+      prismaMock.user.findUnique.mockReturnValue(mockedUser);
+
+      jwtMock.sign.mockReturnValueOnce("newAccessToken");
+      jwtMock.sign.mockReturnValueOnce("newRefreshToken");
+
+      await expect(
+        authService.refreshUserToken(mockedUser.refreshToken)
+      ).resolves.toEqual({
+        accessToken: "newAccessToken",
+        refreshToken: "newRefreshToken",
+      });
+      expect(prismaMock.user.update).toBeCalledWith({
+        where: { id: mockedUser.id },
+        data: { refreshToken: "newRefreshToken" },
+      });
+      expect(jwtMock.sign).toHaveBeenCalledTimes(2);
+    });
+  });
 });
