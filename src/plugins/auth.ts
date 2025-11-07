@@ -1,16 +1,18 @@
 import fp from "fastify-plugin";
 import jwt from "@fastify/jwt";
-import { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
+import {
+  FastifyPluginAsync,
+  FastifyReply,
+  FastifyRequest,
+  preHandlerHookHandler,
+} from "fastify";
 import config from "../config/config";
-import { UserRole } from "@prisma/client";
+import type { UserRole } from "@prisma/client";
 
 declare module "fastify" {
   interface FastifyInstance {
-    authenticate: (
-      request: FastifyRequest,
-      reply: FastifyReply
-    ) => Promise<void>;
-    authorize: (roles: UserRole[]) => unknown;
+    authenticate(request: FastifyRequest, reply: FastifyReply): Promise<void>;
+    authorize(roles: UserRole[]): preHandlerHookHandler;
   }
 }
 

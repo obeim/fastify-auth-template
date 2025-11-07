@@ -8,7 +8,8 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "test": "vitest",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "prepare": "husky install"
   },
   "keywords": [],
   "author": "",
@@ -37,9 +38,14 @@
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "jiti": "^2.6.1",
+    "lint-staged": "^16.2.6",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.46.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "husky": "^8.0.0"
+  },
+  "lint-staged": {
+    "*.ts": "eslint --fix"
   }
 }

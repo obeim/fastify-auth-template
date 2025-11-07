@@ -21,6 +21,8 @@ export default defineConfig([
       "@typescript-eslint": tseslint.plugin,
     },
     extends: ["@typescript-eslint/recommended"],
+    ignores: ["**/*.d.ts"],
+
     rules: {
       ...js.configs.recommended.rules,
       ...tseslint.configs.eslintRecommended.rules,
