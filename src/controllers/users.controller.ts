@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
 class UsersController {
-  constructor(public fastify: FastifyInstance) {}
+  constructor(public _fastify: FastifyInstance) {}
 
   async public(request: FastifyRequest, reply: FastifyReply) {
     reply.send({ message: "public route" });

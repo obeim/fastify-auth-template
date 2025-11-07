@@ -30,11 +30,16 @@
     "prisma": "^6.16.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/bcrypt": "^5.0.2",
     "@types/lodash": "^4.17.17",
     "@types/node": "^22.15.3",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "jiti": "^2.6.1",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
+    "typescript-eslint": "^8.46.3",
     "vitest": "^3.2.4"
   }
 }

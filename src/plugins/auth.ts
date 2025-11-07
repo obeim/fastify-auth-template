@@ -10,7 +10,7 @@ declare module "fastify" {
       request: FastifyRequest,
       reply: FastifyReply
     ) => Promise<void>;
-    authorize: (roles: UserRole[]) => any;
+    authorize: (roles: UserRole[]) => unknown;
   }
 }
 
@@ -24,7 +24,7 @@ const authPlugin: FastifyPluginAsync = fp(async (fastify) => {
     async function (request: FastifyRequest, reply: FastifyReply) {
       try {
         await request.jwtVerify();
-      } catch (err) {
+      } catch (_err) {
         reply.code(401).send({ error: "Unauthorized" });
       }
     }

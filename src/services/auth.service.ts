@@ -42,7 +42,7 @@ export class AuthService {
       try {
         const payload = this.jwt.verify(user.refreshToken);
         if (payload) refreshToken = user.refreshToken;
-      } catch (err) {
+      } catch (_err) {
         refreshToken = this.jwt.sign(
           { id: user.id, name: user.name, role: user.role },
           { expiresIn: "7d" }
@@ -92,7 +92,7 @@ export class AuthService {
         accessToken: accessToken,
         refreshToken: newRefreshToken,
       };
-    } catch (err) {
+    } catch (_err) {
       this.fastify.log.warn(`Invalid Refresh Token:${refreshToken}`);
       const error = new Error(
         "Invalid or expired refresh token"
