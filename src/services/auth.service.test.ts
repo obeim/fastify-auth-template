@@ -7,6 +7,7 @@ const prismaMock = {
     create: vi.fn(),
     findUnique: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
   },
 };
 const jwtMock = {
@@ -140,19 +141,19 @@ describe("authService", () => {
 
   describe("logoutUser", () => {
     it("throw an error if user doesn't exist", async () => {
-      prismaMock.user.findUnique.mockReturnValue(null);
+      prismaMock.user.updateMany.mockReturnValue({ count: 0 });
       await expect(authService.logoutUser(mockedUser.id)).rejects.toThrowError(
         "User not found"
       );
     });
 
     it("update user refresh token and logout successfully", async () => {
-      prismaMock.user.findUnique.mockReturnValue(mockedUser);
+      prismaMock.user.updateMany.mockReturnValue({ count: 1 });
 
       await expect(authService.logoutUser(mockedUser.id)).resolves.toEqual({
         message: "Logged out successfully",
       });
-      expect(prismaMock.user.update).toBeCalledWith({
+      expect(prismaMock.user.updateMany).toBeCalledWith({
         where: { id: mockedUser.id },
         data: { refreshToken: null },
       });

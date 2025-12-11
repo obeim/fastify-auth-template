@@ -18,7 +18,7 @@ class AuthController {
   }
 
   async logout(request: FastifyRequest, reply: FastifyReply) {
-    const response = this.authService.logoutUser(request.user.id);
+    const response = await this.authService.logoutUser(request.user.id);
     reply.status(200).send(response);
   }
 
@@ -26,7 +26,6 @@ class AuthController {
     request: FastifyRequestTypeBox<typeof LoginSchema>,
     reply: FastifyReplyTypeBox<typeof LoginSchema>
   ) {
-    console.log(this.authService);
     const { refreshToken, ...rest } = await this.authService.loginUser(
       request.body.email,
       request.body.password
@@ -37,7 +36,7 @@ class AuthController {
       .setCookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: true,
-        path: "/api/auth/refresh",
+        path: "/api/v1/auth/refresh",
         sameSite: true,
       })
       .send(rest);
@@ -65,7 +64,7 @@ class AuthController {
       .setCookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: true,
-        path: "/api/auth/refresh",
+        path: "/api/v1/auth/refresh",
         sameSite: true,
       })
       .send({ accessToken });

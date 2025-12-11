@@ -11,7 +11,11 @@ const authRoutes: FastifyPluginCallbackTypebox = (fastify, opts, done) => {
   const authService = new AuthService(fastify);
   const authController = new AuthController(authService);
 
-  fastify.get("/logout", authController.logout);
+  fastify.get(
+    "/logout",
+    { preHandler: [fastify.authenticate] },
+    authController.logout
+  );
   fastify.post("/login", { schema: LoginSchema }, authController.login);
   fastify.post(
     "/register",

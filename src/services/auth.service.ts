@@ -38,16 +38,24 @@ export class AuthService {
       { algorithm: "HS256", expiresIn: "15m" }
     );
 
+    // Reuse existing valid refresh token, or generate a new one
     if (user.refreshToken) {
       try {
         const payload = this.jwt.verify(user.refreshToken);
         if (payload) refreshToken = user.refreshToken;
       } catch (_err) {
+        // Existing token is invalid/expired, generate new one
         refreshToken = this.jwt.sign(
           { id: user.id, name: user.name, role: user.role },
           { expiresIn: "7d" }
         );
       }
+    } else {
+      // No existing refresh token, generate new one
+      refreshToken = this.jwt.sign(
+        { id: user.id, name: user.name, role: user.role },
+        { expiresIn: "7d" }
+      );
     }
 
     await this.prisma.user.update({
@@ -103,18 +111,16 @@ export class AuthService {
   }
 
   async logoutUser(userId: number) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const result = await this.prisma.user.updateMany({
+      where: { id: userId },
+      data: { refreshToken: null },
+    });
 
-    if (!user) {
+    if (result.count === 0) {
       const error = new Error("User not found") as FastifyError;
       error.statusCode = 404;
       throw error;
     }
-
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: null },
-    });
 
     return { message: "Logged out successfully" };
   }
